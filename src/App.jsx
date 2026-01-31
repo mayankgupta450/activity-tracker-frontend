@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import UserDashboard from "./components/UserDashboard";
 import AdminDashBoard from "./components/AdminDashBoard";
 import ProtectedRoute from "./components/ProtectedRoute";
-
 function App() {
   return (
     <BrowserRouter>

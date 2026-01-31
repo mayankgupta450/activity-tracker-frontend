@@ -27,12 +27,14 @@ const UserManagement = () => {
 
   //dummy data as of now
   const [users, setUsers] = useState([]);
+  const [programs, setPrograms] = useState([]);
 
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
     role: "",
+    programIds: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -52,6 +54,8 @@ const UserManagement = () => {
     else if (formData.password.length < 6) err.password = "Min 6 characters";
 
     if (!formData.role) err.role = "Role is required";
+    if (!formData.programIds.length)
+      err.programIds = "At least one program is required";
 
     setErrors(err);
     return Object.keys(err).length === 0;
@@ -90,6 +94,8 @@ const UserManagement = () => {
         email: "",
         password: "",
         role: "",
+       programIds: [],
+  
       });
       setErrors({});
     } catch (e) {
@@ -122,8 +128,25 @@ const UserManagement = () => {
     }
   };
 
+  // Fetch programs from backend
+  const fetchPrograms = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch("http://localhost:8080/api/admin/programs", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setPrograms(data);
+    } catch (e) {
+      console.error("Fetch programs error:", e);
+    }
+  };
+
   useEffect(() => {
     fetchUsers(); // load user from backend
+    fetchPrograms();
   }, [token]);
 
   return (
@@ -193,6 +216,36 @@ const UserManagement = () => {
               <p className="text-red-500 text-sm">{errors.role}</p>
             )}
           </div>
+          <div>
+            <Label>Programs</Label>
+
+            <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
+              {programs.map((p) => (
+                <div key={p.id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    value={p.id}
+                    checked={formData.programIds.includes(p.id)}
+                    onChange={(e) => {
+                      const id = Number(e.target.value);
+                      setFormData((prev) => ({
+                        ...prev,
+                        programIds: e.target.checked
+                          ? [...prev.programIds, id]
+                          : prev.programIds.filter((pid) => pid !== id),
+                      }));
+                      setErrors({ ...errors, programIds: "" });
+                    }}
+                  />
+                  <span>{p.name}</span>
+                </div>
+              ))}
+            </div>
+
+            {errors.programIds && (
+              <p className="text-red-500 text-sm">{errors.programIds}</p>
+            )}
+          </div>
 
           <Button onClick={handleCreateUser} disabled={loading}>
             {loading ? "Creating..." : "Create User"}
@@ -214,6 +267,9 @@ const UserManagement = () => {
                 <TableHead className="cursor-pointer">Username</TableHead>
                 <TableHead className="cursor-pointer">Email</TableHead>
                 <TableHead className="cursor-pointer">Role</TableHead>
+                <TableHead className="cursor-pointer">
+                  Assigned Program
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -223,6 +279,7 @@ const UserManagement = () => {
                   <TableCell>{u.username}</TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>{u.role}</TableCell>
+                  <TableCell>{u.programNames?.join(", ")}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
