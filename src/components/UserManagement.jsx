@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +26,7 @@ const UserManagement = () => {
   const token = user?.token;
 
   //dummy data as of now
-  const [users, setUsers] = useState([
-    { id: 1, username: "admin", email: "admin@gmail.com", role: "ADMIN" },
-    { id: 2, username: "user1", email: "user1@gmail.com", role: "USER" },
-  ]);
+  const [users, setUsers] = useState([]);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -86,8 +83,7 @@ const UserManagement = () => {
         setApiError(data.error || "Something went wrong");
         return;
       }
-
-      setUsers((prev) => [...prev, data]);
+      await fetchUsers(); //again calling api to fetch the data
 
       setFormData({
         username: "",
@@ -103,6 +99,32 @@ const UserManagement = () => {
       setLoading(false);
     }
   };
+
+  const fetchUsers = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch("http://localhost:8080/api/admin/users", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        setApiError(errorData.error || "Failed to fetch users");
+        return;
+      }
+
+      const data = await res.json();
+      setUsers(data);
+    } catch (e) {
+      console.error("Fetch users error:", e);
+      setApiError("Network error. Could not fetch users.");
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(); // load user from backend
+  }, [token]);
 
   return (
     <div className="space-y-8">
