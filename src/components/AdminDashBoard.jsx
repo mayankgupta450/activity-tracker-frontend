@@ -1,9 +1,15 @@
-import React from 'react'
+import React from "react";
+import UserManagement from "./UserManagement";
 
 const AdminDashBoard = () => {
   return (
-    <div>AdminDashBoard</div>
-  )
-}
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
-export default AdminDashBoard
+      {/* User Management Section to manage usere*/}
+      <UserManagement />
+    </div>
+  );
+};
+
+export default AdminDashBoard;
