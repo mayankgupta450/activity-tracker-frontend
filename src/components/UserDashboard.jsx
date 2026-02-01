@@ -40,7 +40,7 @@ const UserDashboard = () => {
             } hover:opacity-90 cursor-pointer`}
             onClick={() => setActiveTab("ownactivitylogs")}
           >
-            Activity Logs
+            Own Activity Logs
           </button>
           <button
             className={`hover:opacity-90 cursor-pointer`}

@@ -7,8 +7,9 @@ export const AuthProvider = ({ children }) => {
     email: null,
     role: null,
     token: null,
+    id: null,
   });
-
+  const[settingUserId,setSettingUseriD]=useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("jwtToken");
     localStorage.removeItem("userEmail");
 
-    setUser({ email: null, role: null, token: null });
+    setUser({ email: null, role: null, token: null, id: null });
     setIsAuthenticated(false);
   };
 
@@ -35,7 +36,9 @@ export const AuthProvider = ({ children }) => {
       if (!res.ok) throw new Error("Invalid token");
 
       const data = await res.json();
-      setUser({ email: data.email, role: data.role, token });
+      console.log("authc ",data);
+      setUser({ email: data.email, role: data.role, token, id: data.id });
+      setSettingUseriD(data.id);
       setIsAuthenticated(true);
     } catch {
       logout();
@@ -48,10 +51,10 @@ export const AuthProvider = ({ children }) => {
     validateToken();
   }, []);
 
-  const login = ({ email, token, role }) => {
+  const login = ({ email, token, role,id }) => {
     localStorage.setItem("jwtToken", token);
     localStorage.setItem("userEmail", email);
-    setUser({ email, role, token });
+    setUser({ email, role, token,id });
     setIsAuthenticated(true);
     setLoading(true);
   };
@@ -65,6 +68,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         loading,
         setLoading,
+        settingUserId
       }}
     >
       {children}

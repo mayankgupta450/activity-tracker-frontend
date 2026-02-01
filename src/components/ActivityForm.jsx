@@ -112,7 +112,7 @@ const ActivityForm = () => {
       }
 
       const data = await res.json();
-      console.log("dta ", data);
+      console.log("data user-> ", data);
       setPrograms(data);
     } catch (error) {
       console.error("failed", error);
@@ -147,7 +147,7 @@ const ActivityForm = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(activityData),
       });
@@ -160,8 +160,6 @@ const ActivityForm = () => {
       const result = await response.json();
       console.log("Activity saved successfully:", result);
       resetForm();
-
-
     } catch (err) {
       console.error("Error saving activity:", err);
     } finally {
@@ -195,6 +193,13 @@ const ActivityForm = () => {
 
     if (!formData.outputCount) {
       newErrors.outputCount = "Output count is required";
+    }
+    if (
+      formData.activityTypeId === "TASK_EXECUTION" &&
+      Number(formData.outputCount) < 1
+    ) {
+      newErrors.outputCount =
+        "Output count must be greater than or equal to 1 for Task Execution";
     }
 
     setErrors(newErrors);
