@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,23 +12,13 @@ import {
 } from "@/components/ui/table";
 import { Search, Download } from "lucide-react";
 import { useAuth } from "./context/AuthContext";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-} from "recharts";
+import BarChart from "./BarChart";
 
 const ActivityLogs = () => {
   const { user } = useAuth();
   const token = user?.token;
-  const [programStats, setProgramStats] = useState([
-    { program: "Health Check", output: 10 },
-    { program: "Nutrition", output: 5 },
-  ]);
+  const [programOutputCount, setProgramOutputCount] = useState([]);
+  const [programActivity, setProgramActivity] = useState([]);
 
   const [activities, setActivities] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,10 +42,48 @@ const ActivityLogs = () => {
       setLoading(false);
     }
   };
-  
 
+  const fetchProgramStats = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:8080/admin/program-output-count",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch chart data");
+      }
+
+      const data = await res.json();
+      const outputData = data.outputCountData || [];
+      const activityData = data.activityCountData || [];
+
+      console.log("data ", data);
+      const formattedOutputCountData = outputData.map((item) => ({
+        program: item.programName,
+        value: item.totalOutput,
+      }));
+
+      const formattedActivityData = activityData.map((item) => ({
+        program: item.programName,
+        value: item.activityCount,
+      }));
+
+      setProgramOutputCount(formattedOutputCountData);
+      setProgramActivity(formattedActivityData);
+    } catch (err) {
+      console.error("Chart fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     fetchActivities();
+    fetchProgramStats();
   }, []);
 
   // Filter activities based on search query
@@ -154,54 +176,20 @@ const ActivityLogs = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* -------------------------------
-       */}
       <div className="space-y-6">
-        {/* Chart */}
-        <Card className="shadow-soft">
-          <CardHeader>
-            <CardTitle className="text-lg">
-              Program having how many output count
-            </CardTitle>
-            <CardDescription>
-              Total output generated under each program
-            </CardDescription>
-          </CardHeader>
+        {/* Total Output Chart */}
+        <BarChart
+          title="Total Output per Program"
+          description="Total output generated under each program"
+          data={programOutputCount}
+        />
 
-          <CardContent>
-            {loading ? (
-              <p className="text-muted-foreground">Loading chart...</p>
-            ) : programStats.length === 0 ? (
-              <p className="text-muted-foreground">No data available</p>
-            ) : (
-              <div className="h-[320px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={programStats}
-                    layout="vertical"
-                    margin={{ top: 10, right: 30, left: 60, bottom: 10 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis
-                      dataKey="program"
-                      type="category"
-                      width={150}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <Tooltip />
-                    <Bar
-                      dataKey="output"
-                      fill="hsl(var(--primary))"
-                      radius={[0, 6, 6, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Activity Count Chart */}
+        <BarChart
+          title="Activities per Program"
+          description="Number of activity logs under each program"
+          data={programActivity}
+        />
       </div>
     </div>
   );
