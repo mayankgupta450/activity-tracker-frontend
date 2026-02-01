@@ -18,33 +18,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Send, Loader2 } from "lucide-react";
-import {useNavigate } from "react-router-dom";
+import { Send, Loader2 } from "lucide-react";
 
-const ActivityForm = ({ addActivity }) => {
+const ActivityForm = () => {
   const { user } = useAuth();
   const token = user?.token;
-  const navigate = useNavigate();
-
-  const initialProgramId ="";
 
   const [formData, setFormData] = useState({
-    programId: initialProgramId,
+    programId: "",
     activityTypeId: "",
     workContextId: "",
     description: "",
     date: new Date().toISOString().split("T")[0],
     outputCount: "",
   });
-
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [programs, setPrograms] = useState([]);
   const [activityTypes, setActivityTypes] = useState([]);
   const [workContexts, setWorkContexts] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // fetch activity types
   const fetchActivityTypes = async () => {
-    if (!token) return; 
+    if (!token) return;
 
     const headers = {
       "Content-Type": "application/json",
@@ -69,10 +66,9 @@ const ActivityForm = ({ addActivity }) => {
     }
   };
 
-
   //fetch work context
   const fetchWorkContext = async () => {
-    if (!token) return; 
+    if (!token) return;
 
     const headers = {
       "Content-Type": "application/json",
@@ -96,10 +92,9 @@ const ActivityForm = ({ addActivity }) => {
     }
   };
 
-
   //fetch user specifci
   const fetchUserSpecificProgramsOnly = async () => {
-    if (!token) return; 
+    if (!token) return;
 
     const headers = {
       "Content-Type": "application/json",
@@ -117,7 +112,7 @@ const ActivityForm = ({ addActivity }) => {
       }
 
       const data = await res.json();
-      console.log("dta ",data);
+      console.log("dta ", data);
       setPrograms(data);
     } catch (error) {
       console.error("failed", error);
@@ -129,18 +124,101 @@ const ActivityForm = ({ addActivity }) => {
     fetchActivityTypes();
     fetchWorkContext();
     fetchUserSpecificProgramsOnly();
-  }, [token]); 
+  }, [token]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    setIsSubmitting(true);
+    try {
+      const activityData = {
+        programId: Number(formData.programId),
+        activityTypeId: formData.activityTypeId,
+        workContextId: formData.workContextId,
+        description: formData.description,
+        outputCount: Number(formData.outputCount),
+        date: formData.date,
+        userId: selectedUserId,
+      };
+
+      console.log("Submitted Activity Data:", activityData);
+
+      const response = await fetch("http://localhost:8080/save-activity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+        body: JSON.stringify(activityData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to save activity");
+      }
+
+      const result = await response.json();
+      console.log("Activity saved successfully:", result);
+      resetForm();
+
+
+    } catch (err) {
+      console.error("Error saving activity:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // validation handling
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.programId) {
+      newErrors.programId = "Please select a program";
+    }
+
+    if (!formData.activityTypeId) {
+      newErrors.activityTypeId = "Please select an activity type";
+    }
+
+    if (!formData.workContextId) {
+      newErrors.workContextId = "Please select a work context";
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    }
+
+    if (!formData.date) {
+      newErrors.date = "Please select a date";
+    }
+
+    if (!formData.outputCount) {
+      newErrors.outputCount = "Output count is required";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  //reset form
+  const resetForm = () => {
+    setFormData({
+      programId: "",
+      activityTypeId: "",
+      workContextId: "",
+      description: "",
+      date: new Date().toISOString().split("T")[0],
+      outputCount: "",
+    });
+    setErrors({});
+    setIsSubmitting(false);
   };
 
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Log Activity</h1>
           <p className="text-muted-foreground mt-1">
@@ -163,18 +241,32 @@ const ActivityForm = ({ addActivity }) => {
               <Label>Program *</Label>
               <Select
                 value={formData.programId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, programId: value })
-                }
-                required
+                onValueChange={(value) => {
+                  const selectedProgram = programs.find(
+                    (p) => p.programId.toString() === value,
+                  );
+                  setFormData({
+                    ...formData,
+                    programId: value,
+                  });
+                  setSelectedUserId(selectedProgram.userId);
+                  setErrors({ ...errors, programId: "" });
+                }}
               >
+                {errors.programId && (
+                  <p className="text-sm text-red-500">{errors.programId}</p>
+                )}
+
                 <SelectTrigger>
                   <SelectValue placeholder="Select a program" />
                 </SelectTrigger>
                 <SelectContent>
-                   {programs.map((type, index) => (
-                    <SelectItem key={index} value={type}>
-                      {type}
+                  {programs.map((program) => (
+                    <SelectItem
+                      key={program.programId}
+                      value={program.programId.toString()}
+                    >
+                      {program.programName}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -185,11 +277,16 @@ const ActivityForm = ({ addActivity }) => {
               <Label>Activity Type *</Label>
               <Select
                 value={formData.activityTypeId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, activityTypeId: value })
-                }
-                required
+                onValueChange={(value) => {
+                  setFormData({ ...formData, activityTypeId: value });
+                  setErrors({ ...errors, activityTypeId: "" });
+                }}
               >
+                {errors.activityTypeId && (
+                  <p className="text-sm text-red-500">
+                    {errors.activityTypeId}
+                  </p>
+                )}
                 <SelectTrigger>
                   <SelectValue placeholder="Select activity type" />
                 </SelectTrigger>
@@ -203,16 +300,19 @@ const ActivityForm = ({ addActivity }) => {
               </Select>
             </div>
 
-            {/* Work Context Dropdown */}
             <div className="space-y-2">
               <Label>Work Context *</Label>
               <Select
                 value={formData.workContextId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, workContextId: value })
-                }
-                required
+                onValueChange={(value) => {
+                  setFormData({ ...formData, workContextId: value });
+                  setErrors({ ...errors, workContextId: "" });
+                }}
               >
+                {errors.workContextId && (
+                  <p className="text-sm text-red-500">{errors.workContextId}</p>
+                )}
+
                 <SelectTrigger>
                   <SelectValue placeholder="Select work context" />
                 </SelectTrigger>
@@ -226,62 +326,69 @@ const ActivityForm = ({ addActivity }) => {
               </Select>
             </div>
 
-            {/* Date */}
             <div className="space-y-2">
               <Label>Date *</Label>
               <Input
                 type="date"
                 value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
+                onChange={(e) => {
+                  setFormData({ ...formData, date: e.target.value });
+                  setErrors({ ...errors, date: "" });
+                }}
                 max={new Date().toISOString().split("T")[0]}
-                required
               />
+              {errors.date && (
+                <p className="text-sm text-red-500">{errors.date}</p>
+              )}
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
               <Label>Description *</Label>
               <Textarea
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => {
+                  setFormData({ ...formData, description: e.target.value });
+                  setErrors({ ...errors, description: "" });
+                }}
                 rows={5}
-                required
               />
+              {errors.description && (
+                <p className="text-sm text-red-500">{errors.description}</p>
+              )}
             </div>
 
-            {/* Output Count */}
             <div className="space-y-2">
               <Label>Output Count</Label>
               <Input
                 type="number"
+                min={0}
                 value={formData.outputCount}
-                onChange={(e) =>
-                  setFormData({ ...formData, outputCount: e.target.value })
-                }
+                onChange={(e) => {
+                  setFormData({ ...formData, outputCount: e.target.value });
+                  setErrors({ ...errors, outputCount: "" });
+                }}
               />
+              {errors.outputCount && (
+                <p className="text-sm text-red-500">{errors.outputCount}</p>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(-1)}
+                onClick={resetForm}
                 className="flex-1"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="flex-1 gradient-accent text-accent-foreground"
-                disabled={isSubmitting}
+                className="flex-1 gradient-accent text-accent-foreground text-white"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />{" "}
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Submitting...
                   </>
                 ) : (

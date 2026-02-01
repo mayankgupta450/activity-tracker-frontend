@@ -3,8 +3,10 @@ import UserManagement from "./UserManagement";
 import Program from "./Program";
 import { useNavigate } from "react-router-dom";
 import ActivityLogs from "./ActivityLogs";
+import { useAuth } from "./context/AuthContext";
 
 const AdminDashBoard = () => {
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState("userManagement");
 
   const renderTabContent = () => {
@@ -19,6 +21,7 @@ const AdminDashBoard = () => {
         return <div>Select a section</div>;
     }
   };
+
   return (
     <div>
       <header className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
@@ -55,6 +58,9 @@ const AdminDashBoard = () => {
             onClick={() => setActiveTab("activityLogs")}
           >
             Activity Logs
+          </button>
+          <button className={`hover:opacity-90 cursor-pointer`} onClick={() =>  logout()}>
+            Logout
           </button>
         </nav>
       </header>
