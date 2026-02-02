@@ -14,7 +14,7 @@ import { Search, Download } from "lucide-react";
 import { useAuth } from "./context/AuthContext";
 
 const UserOwnActivityLogs = () => {
-  const { user, settingUserId } = useAuth();
+  const { user,settingUserId } = useAuth();
   const token = user?.token;
 
   const [activities, setActivities] = useState([]);

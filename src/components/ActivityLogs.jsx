@@ -98,12 +98,47 @@ const ActivityLogs = () => {
       );
   });
 
-  // export data
+
+  //export data
   const exportToCSV = () => {
-    console.log("exporty");
-  };
+  fetch("http://localhost:8080/export-activities", {
+    headers: {
+      Authorization: `Bearer ${user.token}`, // pass JWT token
+    },
+  })
+    .then((response) => {
+      if (!response.ok) throw new Error("Failed to export CSV");
+      return response.blob(); // get response as blob
+    })
+    .then((blob) => {
+      // create a temporary download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "activity_logs.csv"; // file name
+      document.body.appendChild(a);
+      a.click(); // trigger download
+      a.remove();
+      window.URL.revokeObjectURL(url); 
+    })
+    .catch((error) => {
+      console.error("export failed", error);
+      alert("failed due to some errro");
+    });
+};
+
 
   if (loading) return <div>Loading activities...</div>;
+  const headerLabels = {
+    userId: "User ID",
+    userName: "User Name",
+    programName: "Program Name",
+    activityDate: "Activity Date",
+    activityType: "Activity Type",
+    workContext: "Work Context",
+    outputCount: "Output Count",
+    notes: "Notes",
+  };
 
   return (
     <div className="space-y-6">
@@ -140,7 +175,11 @@ const ActivityLogs = () => {
                   {activities.length > 0 &&
                     Object.keys(activities[0])
                       .filter((key) => !excludedKeys.includes(key))
-                      .map((key) => <TableHead key={key}>{key}</TableHead>)}
+                      .map((key) => (
+                        <TableHead key={key}>
+                          {headerLabels[key] || key}
+                        </TableHead>
+                      ))}
                 </TableRow>
               </TableHeader>
               <TableBody>

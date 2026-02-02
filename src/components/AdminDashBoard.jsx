@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import UserManagement from "./UserManagement";
-import Program from "./Program";
-import { useNavigate } from "react-router-dom";
-import ActivityLogs from "./ActivityLogs";
+// import UserManagement from "./UserManagement";
+// import Program from "./Program";
+// import ActivityLogs from "./ActivityLogs";
+// Lazy load components only loads when they triggered
+const UserManagement = React.lazy(() => import("./UserManagement"));
+const Program = React.lazy(() => import("./Program"));
+const ActivityLogs = React.lazy(() => import("./ActivityLogs"));
 import { useAuth } from "./context/AuthContext";
 
 const AdminDashBoard = () => {
@@ -32,7 +35,7 @@ const AdminDashBoard = () => {
               activeTab === "userManagement"
                 ? "border-b-2 border-white font-semibold"
                 : ""
-            } hover:opacity-90`}
+            } hover:opacity-90 cursor-pointer`}
             onClick={() => setActiveTab("userManagement")}
           >
             User Management
@@ -43,7 +46,7 @@ const AdminDashBoard = () => {
               activeTab === "program"
                 ? "border-b-2 border-white font-semibold"
                 : ""
-            } hover:opacity-90`}
+            } hover:opacity-90 cursor-pointer`}
             onClick={() => setActiveTab("program")}
           >
             Create Program
@@ -54,7 +57,7 @@ const AdminDashBoard = () => {
               activeTab === "activityLogs"
                 ? "border-b-2 border-white font-semibold"
                 : ""
-            } hover:opacity-90`}
+            } hover:opacity-90 cursor-pointer`}
             onClick={() => setActiveTab("activityLogs")}
           >
             Activity Logs

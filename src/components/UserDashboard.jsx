@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import ActivityForm from "./ActivityForm";
-import UserOwnActivityLogs from "./UserOwnActivityLogs";
+// import ActivityForm from "./ActivityForm";
+// import UserOwnActivityLogs from "./UserOwnActivityLogs";
+// Lazy load components
+const ActivityForm = React.lazy(() => import("./ActivityForm"));
+const UserOwnActivityLogs = React.lazy(() => import("./UserOwnActivityLogs"));
 import { useAuth } from "./context/AuthContext";
 
 const UserDashboard = () => {

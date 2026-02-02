@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
     token: null,
     id: null,
   });
-  const[settingUserId,setSettingUseriD]=useState('');
+  const[settingUserId,setSettingUserId]=useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
       console.log("authc ",data);
       setUser({ email: data.email, role: data.role, token, id: data.id });
-      setSettingUseriD(data.id);
+      setSettingUserId(data.id);
       setIsAuthenticated(true);
     } catch {
       logout();
@@ -68,7 +68,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         loading,
         setLoading,
-        settingUserId
+        settingUserId,
+        setSettingUserId,
       }}
     >
       {children}

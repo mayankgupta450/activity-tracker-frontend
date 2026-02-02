@@ -21,7 +21,7 @@ import {
 import { Send, Loader2 } from "lucide-react";
 
 const ActivityForm = () => {
-  const { user } = useAuth();
+  const { user, setSettingUserId } = useAuth();
   const token = user?.token;
 
   const [formData, setFormData] = useState({
@@ -114,6 +114,9 @@ const ActivityForm = () => {
       const data = await res.json();
       console.log("data user-> ", data);
       setPrograms(data);
+      const userId = data?.[0]?.userId ?? null;
+      setSettingUserId(userId);
+      console.log("UserId set to:", userId);
     } catch (error) {
       console.error("failed", error);
     }

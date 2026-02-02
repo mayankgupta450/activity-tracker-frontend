@@ -208,8 +208,8 @@ const UserManagement = () => {
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="2">ADMIN</SelectItem>
-                <SelectItem value="1">USER</SelectItem>
+                <SelectItem value="1">ADMIN</SelectItem>
+                <SelectItem value="2">USER</SelectItem>
               </SelectContent>
             </Select>
             {errors.role && (
