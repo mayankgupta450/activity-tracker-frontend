@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAuth } from "./context/AuthContext";
+import AssignProgramsModal from "./AssignProgramsModal";
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -28,6 +29,8 @@ const UserManagement = () => {
   //dummy data as of now
   const [users, setUsers] = useState([]);
   const [programs, setPrograms] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showProgramModal, setShowProgramModal] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -94,8 +97,7 @@ const UserManagement = () => {
         email: "",
         password: "",
         role: "",
-       programIds: [],
-  
+        programIds: [],
       });
       setErrors({});
     } catch (e) {
@@ -149,6 +151,9 @@ const UserManagement = () => {
     fetchPrograms();
   }, [token]);
 
+  useEffect(()=>{
+console.log("users user",users);
+  },[users])
   return (
     <div className="space-y-8">
       <Card>
@@ -270,6 +275,7 @@ const UserManagement = () => {
                 <TableHead className="cursor-pointer">
                   Assigned Program
                 </TableHead>
+                 <TableHead className="cursor-pointer">Assign/Un-Assign</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -280,12 +286,32 @@ const UserManagement = () => {
                   <TableCell>{u.email}</TableCell>
                   <TableCell>{u.role}</TableCell>
                   <TableCell>{u.programNames?.join(", ")}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedUser(u);
+                        setShowProgramModal(true);
+                      }}
+                    >
+                      Edit Programs
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+      {showProgramModal && (
+        <AssignProgramsModal
+          user={selectedUser}
+          programs={programs}
+          onClose={() => setShowProgramModal(false)}
+          onSuccess={fetchUsers} // refresh table
+        />
+      )}
     </div>
   );
 };
