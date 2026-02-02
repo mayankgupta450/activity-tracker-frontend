@@ -3,14 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "./context/AuthContext";
 
-const AssignProgramsModal = ({ user, programs, onClose, onSuccess }) => {
-//   const { user } = useAuth();
-//   const token = user?.token;
+const AssignProgramsModal = ({ user, programs, onClose, onSuccess,token }) => {
   const [selectedPrograms, setSelectedPrograms] = useState([]);
 
   // setting intial all program 
   useEffect(() => {
     setSelectedPrograms(user.programIds || []);
+    console.log("users in porgram modal",token);
   }, [user]);
 
   const toggleProgram = (id) => {
@@ -20,7 +19,7 @@ const AssignProgramsModal = ({ user, programs, onClose, onSuccess }) => {
   };
 
   const savePrograms = async () => {
-    await fetch(`http://localhost:8080/api/admin/users/${user.id}/programs`, {
+    await fetch(`http://localhost:8080/api/admin/${user.id}/programs`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

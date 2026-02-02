@@ -308,6 +308,7 @@ console.log("users user",users);
         <AssignProgramsModal
           user={selectedUser}
           programs={programs}
+          token={token}
           onClose={() => setShowProgramModal(false)}
           onSuccess={fetchUsers} // refresh table
         />
