@@ -1,16 +1,28 @@
-# React + Vite
+Activity Tracker – Initial Project Setup Guide
+Frontend (React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+:-> This guide explains the basic steps required to set up and run the Activity Tracker frontend application on a local machine.
 
-Currently, two official plugins are available:
+Prerequisites:->
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+:-> Node.js (version 18 or higher), Visual Studio Code (VS Code)
 
-## React Compiler
+:-> You can verify the installed versions of Node.js and npm using their respective version commands.   ( node -v , npm -v )
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+:-> The versions used during development of this project are:
 
-## Expanding the ESLint configuration
+:-> Node.js: v24.11.1 , npm: 11.6.2
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+:-> Steps to Run the Frontend
+
+-> Download or clone the project from the GitHub repository.
+
+-> Open the project folder in VS Code.
+
+-> Install all required project dependencies using npm install command.
+
+-> Start the frontend application server by npm run dev    ( http://localhost:5173/ )
+
+Important Notes:->
+
+:-> The backend server must be running while using the frontend application.
