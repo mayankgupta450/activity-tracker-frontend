@@ -136,7 +136,7 @@ const Login = () => {
                 type="submit"
                 className="w-full h-11 gradient-accent text-accent-foreground font-medium text-white"
               >
-                "Sign in"
+                Sign in
               </Button>
             </form>
 

@@ -19,6 +19,11 @@ const ActivityLogs = () => {
   const token = user?.token;
   const [programOutputCount, setProgramOutputCount] = useState([]);
   const [programActivity, setProgramActivity] = useState([]);
+  //sorting state
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
 
   const [activities, setActivities] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -98,35 +103,49 @@ const ActivityLogs = () => {
       );
   });
 
+  // sorted activities
+  const sortedActivities = [...filteredActivities].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+
+    const valA = a[sortConfig.key];
+    const valB = b[sortConfig.key];
+
+    if (typeof valA === "number" && typeof valB === "number") {
+      return sortConfig.direction === "asc" ? valA - valB : valB - valA;
+    }
+
+    return sortConfig.direction === "asc"
+      ? valA.toString().localeCompare(valB.toString())
+      : valB.toString().localeCompare(valA.toString());
+  });
 
   //export data
   const exportToCSV = () => {
-  fetch("http://localhost:8080/export-activities", {
-    headers: {
-      Authorization: `Bearer ${user.token}`, // pass JWT token
-    },
-  })
-    .then((response) => {
-      if (!response.ok) throw new Error("Failed to export CSV");
-      return response.blob(); // get response as blob
+    fetch("http://localhost:8080/export-activities", {
+      headers: {
+        Authorization: `Bearer ${user.token}`, // pass JWT token
+      },
     })
-    .then((blob) => {
-      // create a temporary download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "activity_logs.csv"; // file name
-      document.body.appendChild(a);
-      a.click(); // trigger download
-      a.remove();
-      window.URL.revokeObjectURL(url); 
-    })
-    .catch((error) => {
-      console.error("export failed", error);
-      alert("failed due to some errro");
-    });
-};
-
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to export CSV");
+        return response.blob(); // get response as blob
+      })
+      .then((blob) => {
+        // create a temporary download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "activity_logs.csv"; // file name
+        document.body.appendChild(a);
+        a.click(); // trigger download
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        console.error("export failed", error);
+        alert("failed due to some errro");
+      });
+  };
 
   if (loading) return <div>Loading activities...</div>;
   const headerLabels = {
@@ -138,6 +157,18 @@ const ActivityLogs = () => {
     workContext: "Work Context",
     outputCount: "Output Count",
     notes: "Notes",
+  };
+  //handle sorting
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === "asc" ? "desc" : "asc",
+        };
+      }
+      return { key, direction: "asc" };
+    });
   };
 
   return (
@@ -176,15 +207,24 @@ const ActivityLogs = () => {
                     Object.keys(activities[0])
                       .filter((key) => !excludedKeys.includes(key))
                       .map((key) => (
-                        <TableHead key={key}>
+                        <TableHead
+                          key={key}
+                          onClick={() => handleSort(key)}
+                          className="cursor-pointer select-none"
+                        >
                           {headerLabels[key] || key}
+                          {sortConfig.key === key && (
+                            <span className="ml-1">
+                              {sortConfig.direction === "asc" ? "▲" : "▼"}
+                            </span>
+                          )}
                         </TableHead>
                       ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredActivities.length > 0 ? (
-                  filteredActivities.map((activity) => (
+                {sortedActivities.length > 0 ? (
+                  sortedActivities.map((activity) => (
                     <TableRow key={activity.id}>
                       {Object.keys(activity)
                         .filter((key) => !excludedKeys.includes(key))
